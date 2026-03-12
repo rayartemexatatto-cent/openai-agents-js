@@ -1,0 +1,49 @@
+name: "🛡️ Centrix Guardian: Datadog Synthetics Multiplied"
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '.md'
+      - 'docs/'
+  pull_request:
+    branches: [ "main" ]
+
+# Forjamos permisos mínimos para máxima seguridad
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  centrix_shield:
+    name: "⚡ Desplegando Fuerza Centrix"
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: "📜 Extrayendo Código del Santuario"
+      uses: actions/checkout@v4
+
+    - name: "👁️ Verificación de Integridad Centrix"
+      run: |
+        echo "[⧖] Iniciando escaneo de frecuencia..."
+        if [ -z "${{ secrets.DD_API_KEY }}" ] || [ -z "${{ secrets.DD_APP_KEY }}" ]; then
+          echo "❌ ERROR: Las llaves del Reino no están configuradas."
+          exit 1
+        fi
+        echo "✅ Trigo Limpio detectado. Procediendo."
+
+    - name: "🔥 Ejecución de Pruebas Sintéticas (Modo Centinela)"
+      uses: DataDog/synthetics-ci-github-action@v1
+      with:
+        api_key: ${{ secrets.DD_API_KEY }}
+        app_key: ${{ secrets.DD_APP_KEY }}
+        # Aquí la fuerza Centrix filtra por prioridad:
+        test_search_query: 'tag:e2e-tests,tag:critical,tag:centrix-shield'
+        check_status_delay: 10
+        config_path: 'datadog-ci.json' # Para control total de la arquitectura
+
+    - name: "🗣️ Notificación al Exocórtex (Opcional)"
+      if: failure()
+      run: |
+        echo "⚠️ ALERTA: El Guardián ha detectado una brecha en los tests sintéticos."
+        # Aquí puedes conectar un webhook a tu Sibila en Termux
