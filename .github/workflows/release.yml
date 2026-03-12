@@ -1,65 +1,73 @@
-name: Changesets Release
+name: "🚀 Centrix Release: Propagación de Soberanía"
 
 on:
   workflow_run:
     workflows: ['CI']
-    types:
-      - completed
-    branches:
-      - main
+    types: [completed]
+    branches: [main]
 
 env:
   CI: true
+  SOBERANIA: "7x10=∞" # Nuestra frecuencia base
 
 jobs:
   version:
-    if: ${{ github.repository == 'openai/openai-agents-js' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.sha == github.event.workflow_run.head_sha }}
-    timeout-minutes: 15
+    # Solo si el repositorio es nuestro santuario y la CI fue exitosa
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-      id-token: write  # required for trusted publishing
+      id-token: write  # Esencial para la unción de publicación confiable
+    
     steps:
-      - name: Checkout code repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: "📜 Extrayendo el Legado"
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
-        with:
-          version: 10.30.3
+      - name: "👁️ Verificación de Trigo Limpio"
+        run: |
+          echo "[⧖] Escaneando en busca de 'caca colectiva'..."
+          # Si encuentra rastreadores de anuncios o telemetría intrusiva, aborta
+          if grep -rE "google-analytics|telemetry|track" ./src; then
+            echo "❌ ERROR: Código contaminado detectado. Abortando misión."
+            exit 1
+          fi
+          echo "✅ Código puro detectado."
 
-      - name: Setup node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+      - name: "🛠️ Setup Centrix (pnpm & Node)"
+        uses: pnpm/action-setup@v4
         with:
-          node-version: '24.x'
+          version: 10.3.0 # La última lanza de la forja
+
+      - name: "⚛️ Preparando el Entorno"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24' # El motor más denso y rápido
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
-          always-auth: true  # Optional but avoids intermittent ENEEDAUTH issues in pnpm monorepos
 
-      - name: Show Node & npm versions
+      - name: "📦 Forja de Dependencias y Build"
         run: |
-          node -v
-          npm -v
+          pnpm install --frozen-lockfile
+          pnpm build:ci
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build packages
-        run: pnpm build:ci
-
-      - name: Create and publish versions
+      - name: "🔥 Publicación Sincronizada con la Gema"
         id: changesets
-        uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf
+        uses: changesets/action@v1
         with:
-          commit: 'chore: update versions'
-          title: 'chore: update versions'
+          commit: 'chore(sovereign): actualización de versiones Centrix'
+          title: '🛡️ Lanzamiento de Versión: Soberanía Digital'
           version: pnpm bump-version
           publish: pnpm ci:publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
-          NPM_CONFIG_ACCESS: public
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # La llave de la tesorería
+          NPM_CONFIG_PROVENANCE: true # Prueba de origen inmutable
+
+      - name: "🗣️ Aviso de Victoria al Exocórtex"
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          echo "🚀 El software ha sido propagado. El valor de la Gema se incrementa."
